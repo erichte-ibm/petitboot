@@ -105,7 +105,7 @@ static int kexec_load(struct boot_task *boot_task)
 
 	p = argv;
 	*p++ = pb_system_apps.kexec;	/* 1 */
-	*p++ = "-l";			/* 2 */
+	*p++ = (boot_task->kexec_method) ? "-s" : "-l";		/* 2 */
 
 	if (local_initrd) {
 		s_initrd = talloc_asprintf(boot_task, "--initrd=%s",
@@ -596,6 +596,8 @@ struct boot_task *boot(void *ctx, struct discover_boot_option *opt,
 	} else {
 		boot_task->args = NULL;
 	}
+
+	boot_task->kexec_method = config->kexec_method;
 
 	if (cmd && cmd->console && !config->manual_console)
 		boot_task->boot_console = talloc_strdup(boot_task, cmd->console);

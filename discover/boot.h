@@ -33,6 +33,7 @@ struct boot_task {
 	bool cancelled;
 	bool verify_signature;
 	bool decrypt_files;
+	bool kexec_method;
 	struct load_url_result *image_signature;
 	struct load_url_result *initrd_signature;
 	struct load_url_result *dtb_signature;

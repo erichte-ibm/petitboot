@@ -171,6 +171,8 @@ struct config {
 
 	bool			allow_writes;
 
+	bool			kexec_method;
+
 	char			*boot_console;
 	bool			manual_console;
 	char			*lang;

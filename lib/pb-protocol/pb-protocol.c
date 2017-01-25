@@ -322,6 +322,8 @@ int pb_protocol_config_len(const struct config *config)
 
 	len += 4; /* allow_writes */
 
+	len += 4; /* kexec_method */
+
 	len += 4; /* n_consoles */
 	for (i = 0; i < config->n_consoles; i++)
 		len += 4 + optional_strlen(config->consoles[i]);
@@ -580,6 +582,9 @@ int pb_protocol_serialise_config(const struct config *config,
 	pos += 4;
 
 	*(uint32_t *)pos = config->allow_writes;
+	pos += 4;
+
+	*(uint32_t *)pos = config->kexec_method;
 	pos += 4;
 
 	*(uint32_t *)pos = __cpu_to_be32(config->n_consoles);
@@ -1120,6 +1125,10 @@ int pb_protocol_deserialise_config(struct config *config,
 	if (read_u32(&pos, &len, &tmp))
 		goto out;
 	config->allow_writes = !!tmp;
+
+	if (read_u32(&pos, &len, &tmp))
+		goto out;
+	config->kexec_method = !!tmp;
 
 	if (read_u32(&pos, &len, &config->n_consoles))
 		goto out;

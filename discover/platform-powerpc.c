@@ -61,6 +61,7 @@ static const char *known_params[] = {
 	"petitboot,console",
 	"petitboot,http_proxy",
 	"petitboot,https_proxy",
+	"petitboot,fileload?",
 	NULL,
 };
 
@@ -550,6 +551,11 @@ static void populate_config(struct platform_powerpc *platform,
 	val = get_param(platform, "petitboot,console");
 	if (val)
 		config->boot_console = talloc_strdup(config, val);
+
+	val = get_param(platform, "petitboot,fileload?");
+	if (val)
+		config->kexec_method = !!strcmp(val, "false");
+
 	/* If a full path is already set we don't want to override it */
 	config->manual_console = config->boot_console &&
 					!strchr(config->boot_console, '[');
@@ -741,6 +747,9 @@ static int update_config(struct platform_powerpc *platform,
 	val = config->https_proxy ?: "";
 	update_string_config(platform, "petitboot,https_proxy", val);
 	set_proxy_variables(config);
+
+	val = config->kexec_method ? "true" : "false";
+	update_string_config(platform, "petitboot,fileload?", val);
 
 	update_network_config(platform, config);
 

@@ -33,7 +33,7 @@
 #include "nc-config.h"
 #include "nc-widgets.h"
 
-#define N_FIELDS	48
+#define N_FIELDS	50
 
 extern struct help_text config_help_text;
 
@@ -68,6 +68,7 @@ struct config_screen {
 	bool			autoboot_enabled;
 	bool			ipmi_override;
 	bool			net_override;
+	bool			kexec_method;
 
 	struct {
 		struct nc_widget_label		*autoboot_l;
@@ -81,6 +82,9 @@ struct config_screen {
 		struct nc_widget_textbox	*timeout_f;
 		struct nc_widget_label		*timeout_l;
 		struct nc_widget_label		*timeout_help_l;
+
+		struct nc_widget_label		*kexec_method_l;
+		struct nc_widget_checkbox	*kexec_method_cb;
 
 		struct nc_widget_label		*ipmi_type_l;
 		struct nc_widget_label		*ipmi_clear_l;
@@ -255,6 +259,8 @@ static int screen_process_form(struct config_screen *screen)
 		if (!errno && end != str)
 			config->autoboot_timeout_sec = x;
 	}
+
+	config->kexec_method = widget_checkbox_get_value(screen->widgets.kexec_method_cb);
 
 	if (screen->ipmi_override)
 		if (widget_checkbox_get_value(screen->widgets.ipmi_clear_cb))
@@ -489,6 +495,16 @@ static void config_screen_layout_widgets(struct config_screen *screen)
 		y += 2;
 	} else
 		y += 1;
+
+
+	wl = widget_label_base(screen->widgets.kexec_method_l);
+	widget_set_visible(wl, true);
+	widget_move(wl, y, screen->label_x);
+
+	wf = widget_checkbox_base(screen->widgets.kexec_method_cb);
+	widget_set_visible(wf, true);
+	widget_move(wf, y, screen->field_x);
+	y += 1;
 
 	if (screen->ipmi_override) {
 		wl = widget_label_base(screen->widgets.ipmi_type_l);
@@ -927,6 +943,11 @@ static void config_screen_setup_widgets(struct config_screen *screen,
 	widget_textbox_set_fixed_size(screen->widgets.timeout_f);
 	widget_textbox_set_validator_integer(screen->widgets.timeout_f, 0, 999);
 
+	screen->widgets.kexec_method_l = widget_new_label(set, 0, 0,
+					_("Use file_load:"));
+	screen->widgets.kexec_method_cb = widget_new_checkbox(set, 0, 0,
+					screen->kexec_method);
+
 	if (config->ipmi_bootdev) {
 		label = talloc_asprintf(screen,
 				_("%s IPMI boot option: %s"),
@@ -1170,6 +1191,7 @@ static void config_screen_draw(struct config_screen *screen,
 		config_screen_setup_empty(screen);
 	} else {
 		screen->net_conf_type = find_net_conf_type(config);
+		screen->kexec_method = config->kexec_method;
 		config_screen_setup_widgets(screen, config, sysinfo);
 		config_screen_layout_widgets(screen);
 	}
